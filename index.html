@@ -20,17 +20,16 @@
         .app-container {
             width: 100vw; height: 100vh; max-width: 1200px;
             background: #fdf5e6; display: flex; flex-direction: column;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); position: relative;
         }
 
-        /* Mode Switch Header */
         .mode-header {
             background: #2d1b18; padding: 10px; display: flex; 
             justify-content: space-around; align-items: center; border-bottom: 2px solid var(--gold);
         }
         .mode-btn {
             background: #444; color: white; border: none; padding: 8px 15px;
-            border-radius: 5px; cursor: pointer; font-weight: bold;
+            border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.9em;
         }
         .mode-btn.active { background: var(--gold); color: #7b241c; }
 
@@ -42,60 +41,67 @@
 
         .left-panel { display: flex; flex-direction: column; flex: 1.2; min-height: 0; }
         .instrument-section { background: #e5d9c5; padding: 15px; text-align: center; flex: 0.8; display: flex; align-items: center; justify-content: center; }
-        #khim-svg { width: 100%; max-width: 400px; height: auto; }
+        #khim-svg { width: 100%; max-width: 350px; height: auto; }
         
         .tuner-display {
             background: #4dd0e1; padding: 20px; text-align: center; border-top: 5px solid #d32f2f; flex: 1.2;
             display: flex; flex-direction: column; justify-content: space-around;
         }
 
-        .note-display-title { font-size: 2.2em; font-weight: bold; margin: 0; }
-        .target-hz-text { font-size: 2.5em; font-weight: bold; margin: 5px 0; color: white; }
+        .note-display-title { font-size: 2.2em; font-weight: bold; margin: 0; color: #1a1a1a; }
+        .target-hz-text { font-size: 1.8em; font-weight: bold; margin: 5px 0; color: #b71c1c; }
 
         .live-hz-box {
             background: var(--gold); color: #7b241c;
-            display: inline-block; min-width: 180px; padding: 12px 25px; 
-            border-radius: 12px; font-size: 2.8em; font-weight: bold;
+            display: inline-block; min-width: 160px; padding: 10px 20px; 
+            border-radius: 12px; font-size: 2.5em; font-weight: bold;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid white;
         }
-        .live-hz-box.match { background-color: var(--success-green) !important; }
+        .live-hz-box.match { background-color: var(--success-green) !important; color: white; }
 
-        .scale-area { width: 95%; margin: 10px auto; position: relative; height: 60px; }
+        .scale-area { width: 90%; margin: 15px auto; position: relative; height: 50px; background: rgba(0,0,0,0.1); border-radius: 10px; }
         .needle-pin {
-            position: absolute; bottom: 0; left: 50%; width: 4px; height: 40px;
+            position: absolute; top: 0; left: 50%; width: 4px; height: 100%;
             background: #ffeb3b; transform: translateX(-50%); transition: left 0.1s ease-out;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
+        .center-line { position: absolute; left: 50%; width: 2px; height: 100%; background: white; opacity: 0.5; }
 
         .right-panel { display: flex; flex-direction: column; flex: 1; background: var(--bridge-red); }
         .bridge-tabs { display: flex; background: #2d1b18; padding: 8px; gap: 5px; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; border-radius: 8px; color: #aaa; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; border-radius: 8px; color: #aaa; font-size: 0.85em; }
         .tab.active { background: var(--bridge-red); color: var(--white); font-weight: bold; }
 
-        .note-grid { padding: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; overflow-y: auto; flex: 1; }
+        .note-grid { padding: 10px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; overflow-y: auto; flex: 1; }
         .note-btn {
-            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;
+            background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px;
             display: flex; flex-direction: column; align-items: center; cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1); color: white;
+            border: 1px solid rgba(255,255,255,0.1); color: white; transition: 0.2s;
         }
-        .note-btn.active { background: var(--gold); color: #7b241c; }
+        .note-btn.active { background: var(--gold); color: #7b241c; border-color: white; }
+        .note-btn small { opacity: 0.8; font-size: 0.7em; }
 
-        #start-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #start-btn { padding: 15px 60px; font-size: 1.8em; background: var(--gold); border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
+        #start-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        #start-btn { padding: 18px 50px; font-size: 1.5em; background: var(--gold); border: none; border-radius: 50px; cursor: pointer; font-weight: bold; color: #7b241c; margin-top: 20px; box-shadow: 0 0 20px var(--gold); }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div id="start-overlay">
-        <h1 style="color: var(--gold);">ตั้งสายขิม โดย boymissu</h1>
-        <p style="color:white">เลือกโหมดและเริ่มตั้งสาย</p>
-        <button id="start-btn">เข้าสู่แอป</button>
+        <h1 style="color: var(--gold); margin-bottom: 5px;">ตั้งสายขิม โดย boymissu</h1>
+        <p style="color:white; font-size: 0.9em;">(Stainless Steel Optimized)</p>
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin: 15px 0;">
+            <p style="color: #00f2fe; margin: 0;">คำแนะนำสำหรับสายสแตนเลส:</p>
+            <p style="color: #ccc; font-size: 0.8em; margin: 5px 0;">หย่องนอก: เบอร์ 22-23 | หย่องกลาง: เบอร์ 23-24</p>
+        </div>
+        <button id="start-btn">เริ่มใช้งาน / Start Tuner</button>
     </div>
 
     <div class="left-panel">
         <div class="mode-header">
-            <button class="mode-btn active" onclick="setMode(417.2, this)">กรมศิลป์ (417.2)</button>
-            <button class="mode-btn" onclick="setMode(440, this)">สากล (440)</button>
+            <button id="mode-thai" class="mode-btn active" onclick="setMode(417.2, this)">กรมศิลป์ (417.2)</button>
+            <button id="mode-inter" class="mode-btn" onclick="setMode(440, this)">สากล (440)</button>
         </div>
         
         <section class="instrument-section">
@@ -108,13 +114,13 @@
         </section>
 
         <section class="tuner-display">
-            <div class="note-display-title" id="display-note">-</div>
-            <div class="target-hz-text" id="display-hz-target">0.0 Hz</div>
+            <div class="note-display-title" id="display-note">ซอล (สูง)</div>
+            <div class="target-hz-text" id="display-hz-target">754.6 Hz</div>
             <div class="hz-box-container">
                 <div class="live-hz-box" id="live-hz-val">0.0 Hz</div>
             </div>
             <div class="scale-area">
-                <div style="display:flex; justify-content: space-between; font-weight:bold; color:white"><span>Flat</span><span>Ideal</span><span>Sharp</span></div>
+                <div class="center-line"></div>
                 <div class="needle-pin" id="needle"></div>
             </div>
         </section>
@@ -122,9 +128,9 @@
 
     <div class="right-panel">
         <div class="bridge-tabs">
-            <div class="tab active" onclick="setBridge('left', this)">หย่องซ้าย</div>
+            <div class="tab active" onclick="setBridge('left', this)">หย่องนอก</div>
             <div class="tab" onclick="setBridge('middle', this)">หย่องกลาง</div>
-            <div class="tab" onclick="setBridge('right', this)">หย่องขวา</div>
+            <div class="tab" onclick="setBridge('right', this)">หย่องใน</div>
         </div>
         <nav id="note-grid" class="note-grid"></nav>
     </div>
@@ -133,8 +139,10 @@
 <script>
     let baseA = 417.2;
     let currentBridge = 'left';
-    let targetHz = 0;
+    let targetHz = 754.6;
     const interval = 171.43;
+    let audioContext, analyser;
+    let pitchSamples = [];
 
     const notes = {
         left:   [{n:"ซอล(สูง)", s:7}, {n:"ฟาร์", s:6}, {n:"มี", s:5}, {n:"เร", s:4}, {n:"โด", s:3}, {n:"ที", s:2}, {n:"ลา", s:1}],
@@ -143,13 +151,14 @@
     };
 
     function calculateHz(steps) {
-        return (baseA * Math.pow(2, (steps * interval) / 1200)).toFixed(1);
+        return parseFloat((baseA * Math.pow(2, (steps * interval) / 1200)).toFixed(1));
     }
 
     function setMode(hz, btn) {
         baseA = hz;
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        updateCurrentTarget();
         renderNotes();
     }
 
@@ -158,6 +167,17 @@
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
         renderNotes();
+    }
+
+    function updateCurrentTarget() {
+        // อัปเดต Hz ของโน้ตที่เลือกอยู่ปัจจุบันเมื่อเปลี่ยนโหมด
+        const currentNoteName = document.getElementById('display-note').innerText;
+        const allNotes = [...notes.left, ...notes.middle, ...notes.right];
+        const match = allNotes.find(x => x.n === currentNoteName);
+        if(match) {
+            targetHz = calculateHz(match.s);
+            document.getElementById('display-hz-target').innerText = targetHz + " Hz";
+        }
     }
 
     function renderNotes() {
@@ -178,23 +198,77 @@
         });
     }
 
-    // --- Tuner Engine (เหมือนเดิม) ---
-    let audioContext, analyser;
-    async function startTuner() {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 4096;
-        audioContext.createMediaStreamSource(stream).connect(analyser);
-        document.getElementById('start-overlay').style.display = 'none';
-        update();
+    // --- YIN Pitch Detection Algorithm ---
+    function yin(buffer, sampleRate) {
+        const threshold = 0.15;
+        const len = Math.floor(buffer.length / 2);
+        const df = new Float32Array(len);
+        for (let tau = 0; tau < len; tau++) {
+            for (let i = 0; i < len; i++) {
+                const delta = buffer[i] - buffer[i + tau];
+                df[tau] += delta * delta;
+            }
+        }
+        const cmndf = new Float32Array(len);
+        cmndf[0] = 1;
+        let sum = 0;
+        for (let tau = 1; tau < len; tau++) {
+            sum += df[tau];
+            cmndf[tau] = df[tau] / (sum / tau || 1);
+        }
+        let tau = -1;
+        for (let t = 1; t < len; t++) {
+            if (cmndf[t] < threshold) { tau = t; break; }
+        }
+        return tau === -1 ? -1 : sampleRate / tau;
     }
 
-    function update() {
-        const buf = new Float32Array(analyser.fftSize);
-        analyser.getFloatTimeDomainData(buf);
-        // ... (YIN Algorithm Logic)
-        requestAnimationFrame(update);
+    async function startTuner() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true } 
+            });
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 4096;
+            audioContext.createMediaStreamSource(stream).connect(analyser);
+            document.getElementById('start-overlay').style.display = 'none';
+            loop();
+        } catch (e) {
+            alert("ไม่สามารถเข้าถึงไมโครโฟนได้ กรุณาอนุญาตการเข้าถึงไมค์");
+        }
+    }
+
+    function loop() {
+        const buffer = new Float32Array(analyser.fftSize);
+        analyser.getFloatTimeDomainData(buffer);
+        
+        // ตรวจสอบความดัง (RMS)
+        let rms = 0;
+        for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
+        rms = Math.sqrt(rms / buffer.length);
+
+        if (rms > 0.01) { // ถ้ามีเสียงดังพอ
+            const pitch = yin(buffer, audioContext.sampleRate);
+            if (pitch > 50 && pitch < 1500) {
+                pitchSamples.push(pitch);
+            }
+        }
+
+        if (pitchSamples.length > 5) {
+            const avg = pitchSamples.reduce((a, b) => a + b) / pitchSamples.length;
+            const liveBox = document.getElementById('live-hz-val');
+            liveBox.innerText = avg.toFixed(1) + " Hz";
+            
+            const diff = avg - targetHz;
+            const needlePos = 50 + (diff * 2); // ปรับความไวเข็ม
+            document.getElementById('needle').style.left = Math.max(5, Math.min(95, needlePos)) + "%";
+            
+            liveBox.classList.toggle('match', Math.abs(diff) < 1.0);
+            pitchSamples = [];
+        }
+
+        requestAnimationFrame(loop);
     }
 
     document.getElementById('start-btn').onclick = startTuner;
