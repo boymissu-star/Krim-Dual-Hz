@@ -38,7 +38,7 @@
         }
 
         .left-panel { display: flex; flex-direction: column; flex: 1.2; min-height: 0; }
-        .instrument-section { background: #e5d9c5; padding: 15px; text-align: center; flex: 0.8; display: flex; align-items: center; justify-content: center; position: relative; }
+        .instrument-section { background: #e5d9c5; padding: 15px; text-align: center; flex: 0.8; display: flex; align-items: center; justify-content: center; }
         #khim-svg { width: 100%; max-width: 400px; height: auto; }
         .khim-string { stroke: #1a0f0d; stroke-width: 0.8; opacity: 0.4; }
         
@@ -56,7 +56,6 @@
         .note-display-title { font-size: 2.2em; font-weight: bold; margin: 0; }
         .target-hz-text { font-size: 2.5em; font-weight: bold; margin: 5px 0; color: white; }
 
-        .hz-box-container { margin: 10px 0; }
         .live-hz-box {
             background: var(--gold); color: #7b241c;
             display: inline-block; min-width: 180px; padding: 12px 25px; 
@@ -97,7 +96,7 @@
         .note-btn.active .n, .note-btn.active .h { color: #7b241c; }
 
         #start-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        #start-btn { padding: 20px 60px; font-size: 2em; background: var(--gold); border: none; border-radius: 50px; cursor: pointer; font-weight: bold; color: #7b241c; box-shadow: 0 0 20px var(--gold); }
+        #start-btn { padding: 20px 60px; font-size: 2em; background: var(--gold); border: none; border-radius: 50px; cursor: pointer; font-weight: bold; color: #7b241c; }
     </style>
 </head>
 <body>
@@ -105,14 +104,13 @@
 <div class="app-container">
     <div id="start-overlay">
         <h1 style="color: var(--gold); margin-bottom: 10px;">ตั้งสายขิม โดย boymissu</h1>
-        <p style="color:white; margin-bottom: 30px;">แตะปุ่มเพื่อเริ่มใช้งานไมโครโฟน</p>
         <button id="start-btn">เริ่มตั้งสาย</button>
     </div>
 
     <div class="left-panel">
         <div class="mode-header">
-            <button id="btn417" class="m-btn active" onclick="changeMode(417.2)">กรมศิลป์ (417.2)</button>
-            <button id="btn440" class="m-btn" onclick="changeMode(440)">สากล (440)</button>
+            <button id="btnThai" class="m-btn active" onclick="changeMode('thai')">กรมศิลป์ (โด 508.5)</button>
+            <button id="btnInter" class="m-btn" onclick="changeMode('inter')">สากล (A=440)</button>
         </div>
 
         <section class="instrument-section">
@@ -127,8 +125,8 @@
         </section>
 
         <section class="tuner-display">
-            <div class="note-display-title" id="display-note">ซอล (สูง)</div>
-            <div class="target-hz-text" id="display-hz-target">755.7 Hz</div>
+            <div class="note-display-title" id="display-note">โด</div>
+            <div class="target-hz-text" id="display-hz-target">508.5 Hz</div>
             <div class="hz-box-container">
                 <div class="live-hz-box" id="live-hz-val">0.0 Hz</div>
             </div>
@@ -142,37 +140,56 @@
 
     <div class="right-panel">
         <div class="bridge-tabs">
-            <div class="tab active" data-b="left">หย่องนอก (ซ้าย)</div>
-            <div class="tab" data-b="middle">หย่องกลาง</div>
-            <div class="tab" data-b="right">หย่องใน (ขวา)</div>
+            <div class="tab" data-b="left">หย่องนอก</div>
+            <div class="tab active" data-b="middle">หย่องกลาง</div>
+            <div class="tab" data-b="right">หย่องใน</div>
         </div>
         <nav id="note-grid" class="note-grid"></nav>
     </div>
 </div>
 
 <script>
-    let baseA = 417.2;
-    const interval = 171.43;
-    let audioContext, analyser, targetHz = 755.7, currentBridge = 'left';
+    let currentMode = 'thai';
+    let currentBridge = 'middle';
+    let targetHz = 508.5;
+    let audioContext, analyser, lastUpdateTime = 0;
     let pitchSamples = [];
-    let lastUpdateTime = 0;
 
-    function calcHz(steps) {
-        return parseFloat((baseA * Math.pow(2, (steps * interval) / 1200)).toFixed(1));
-    }
+    // --- ข้อมูล Fixed สำหรับโหมดไทย (ค่าเดิมของคุณ) ---
+    const thaiHz = {
+        left: [754.6, 683.4, 618.9, 560.5, 507.6, 459.7, 416.3],
+        middle: [508.5, 460.5, 417.0, 377.6, 342.0, 309.7, 280.5],
+        right: [342.0, 309.7, 280.5, 254.0, 230.0, 208.3, 188.6]
+    };
 
-    function getFullData() {
-        return {
-            left: [ {n:"ซอล (สูง)", s:7, y:20, x:30}, {n:"ฟาร์", s:6, y:28, x:30}, {n:"มี", s:5, y:36, x:30}, {n:"เร", s:4, y:44, x:30}, {n:"โด", s:3, y:52, x:30}, {n:"ที", s:2, y:60, x:30}, {n:"ลา", s:1, y:68, x:30} ],
-            middle: [ {n:"โด", s:3, y:20, x:65}, {n:"ที", s:2, y:28, x:65}, {n:"ลา", s:1, y:36, x:65}, {n:"ซอล", s:0, y:44, x:65}, {n:"ฟาร์", s:-1, y:52, x:65}, {n:"มี", s:-2, y:60, x:65}, {n:"เร", s:-3, y:68, x:65} ],
-            right: [ {n:"ฟาร์", s:-1, y:20, x:100}, {n:"มี", s:-2, y:28, x:100}, {n:"เร", s:-3, y:36, x:100}, {n:"โด", s:-4, y:44, x:100}, {n:"ที", s:-5, y:52, x:100}, {n:"ลา", s:-6, y:60, x:100}, {n:"ซอล (ทุ้ม)", s:-7, y:68, x:100} ]
-        };
+    // --- ระยะห่าง Semitones สำหรับคำนวณโหมดสากล (A4=440) ---
+    const semitones = {
+        left: [10, 8, 7, 5, 3, 2, 0],       // G5, F5, E5, D5, C5, B4, A4
+        middle: [3, 2, 0, -2, -4, -5, -7],   // C5, B4, A4, G4, F4, E4, D4
+        right: [-4, -5, -7, -9, -10, -12, -14] // F4, E4, D4, C4, B3, A3, G3
+    };
+
+    const noteNames = {
+        left: ["ซอล (สูง)", "ฟาร์", "มี", "เร", "โด", "ที", "ลา"],
+        middle: ["โด", "ที", "ลา", "ซอล", "ฟาร์", "มี", "เร"],
+        right: ["ฟาร์", "มี", "เร", "โด", "ที", "ลา", "ซอล (ทุ้ม)"]
+    };
+
+    function getHz(bridge, index) {
+        if (currentMode === 'thai') {
+            return thaiHz[bridge][index];
+        } else {
+            // สูตรสากล: f = 440 * 2^(n/12)
+            let n = semitones[bridge][index];
+            return parseFloat((440 * Math.pow(2, n / 12)).toFixed(1));
+        }
     }
 
     function initVisuals() {
         const svgStrings = document.getElementById('strings-group');
         const svgHighs = document.getElementById('highlights-group');
         svgStrings.innerHTML = ''; svgHighs.innerHTML = '';
+        
         for(let i=0; i<7; i++) {
             let y = 20 + (i*8);
             const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -180,64 +197,75 @@
             line.setAttribute("class", "khim-string");
             svgStrings.appendChild(line);
         }
-        const data = getFullData();
-        Object.values(data).flat().forEach((note) => {
-            const hz = calcHz(note.s);
-            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            rect.setAttribute("x", note.x); rect.setAttribute("y", note.y - 2.5); rect.setAttribute("width", "15"); rect.setAttribute("height", "5");
-            rect.setAttribute("rx", "2"); rect.setAttribute("class", "string-highlight"); rect.setAttribute("data-hz", hz);
-            rect.onclick = () => selectNote(note.n, hz);
-            svgHighs.appendChild(rect);
+
+        const xPos = { left: 30, middle: 65, right: 100 };
+        ['left', 'middle', 'right'].forEach(bKey => {
+            noteNames[bKey].forEach((name, idx) => {
+                const hz = getHz(bKey, idx);
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("x", xPos[bKey]);
+                rect.setAttribute("y", 20 + (idx * 8) - 2.5);
+                rect.setAttribute("width", "15"); rect.setAttribute("height", "5");
+                rect.setAttribute("rx", "2"); rect.setAttribute("class", "string-highlight");
+                rect.setAttribute("data-hz", hz);
+                rect.onclick = () => selectNote(name, hz);
+                svgHighs.appendChild(rect);
+            });
         });
+        updateVisualHighlights();
     }
 
     function selectNote(name, hz) {
         targetHz = hz;
         document.getElementById('display-note').innerText = name;
         document.getElementById('display-hz-target').innerText = hz + " Hz";
-        updateVisualHighlights(hz);
+        updateVisualHighlights();
         renderNotes();
     }
 
-    function changeMode(val) {
-        baseA = val;
-        document.getElementById('btn417').classList.toggle('active', val === 417.2);
-        document.getElementById('btn440').classList.toggle('active', val === 440);
+    function changeMode(mode) {
+        currentMode = mode;
+        document.getElementById('btnThai').classList.toggle('active', mode === 'thai');
+        document.getElementById('btnInter').classList.toggle('active', mode === 'inter');
+        
         const currentName = document.getElementById('display-note').innerText;
-        const allNotes = Object.values(getFullData()).flat();
-        const found = allNotes.find(x => x.n === currentName);
-        if(found) selectNote(found.n, calcHz(found.s));
+        const idx = noteNames[currentBridge].indexOf(currentName);
+        const newHz = getHz(currentBridge, idx === -1 ? 0 : idx);
+        
+        selectNote(currentName, newHz);
         initVisuals();
     }
 
-    function updateVisualHighlights(selectedHz) {
+    function updateVisualHighlights() {
         document.querySelectorAll('.string-highlight').forEach(el => {
-            el.classList.toggle('active', Math.abs(parseFloat(el.getAttribute('data-hz')) - selectedHz) < 0.1);
+            el.classList.toggle('active', parseFloat(el.getAttribute('data-hz')) === targetHz);
         });
-        document.querySelectorAll('.note-btn').forEach(btn => {
-            btn.classList.toggle('active', Math.abs(parseFloat(btn.dataset.hz) - selectedHz) < 0.1);
+    }
+
+    function renderNotes() {
+        const grid = document.getElementById('note-grid');
+        grid.innerHTML = '';
+        noteNames[currentBridge].forEach((name, idx) => {
+            const hz = getHz(currentBridge, idx);
+            const btn = document.createElement('div');
+            btn.className = 'note-btn' + (hz === targetHz ? ' active' : '');
+            btn.innerHTML = `<span class="n">${name}</span><span class="h">${hz} Hz</span>`;
+            btn.onclick = () => selectNote(name, hz);
+            grid.appendChild(btn);
         });
     }
 
     async function startTuner() {
-        // แก้ไขจุดค้าง: ปิดหน้าจอทันทีเมื่อกด
         document.getElementById('start-overlay').style.display = 'none';
-
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioContext.state === 'suspended') await audioContext.resume();
-
             analyser = audioContext.createAnalyser();
             analyser.fftSize = 4096;
             audioContext.createMediaStreamSource(stream).connect(analyser);
-
             lastUpdateTime = performance.now();
             requestAnimationFrame(updateLoop);
-        } catch (e) {
-            alert("กรุณาอนุญาตเข้าถึงไมค์ครับ");
-            document.getElementById('start-overlay').style.display = 'flex';
-        }
+        } catch (e) { alert("กรุณาอนุญาตไมค์"); }
     }
 
     function yinPitch(buffer, sampleRate) {
@@ -266,44 +294,26 @@
         if (!analyser) return;
         const buffer = new Float32Array(analyser.fftSize);
         analyser.getFloatTimeDomainData(buffer);
-        
         let rms = 0;
         for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
         rms = Math.sqrt(rms / buffer.length);
-
         if (rms > 0.01) { 
             const pitch = yinPitch(buffer, audioContext.sampleRate);
             if (pitch > 50 && pitch < 1200) pitchSamples.push(pitch);
         }
-
-        if (now - lastUpdateTime > 120) {
+        if (now - lastUpdateTime > 100) {
             const liveHzBox = document.getElementById('live-hz-val');
             if (pitchSamples.length > 0) {
                 const avgPitch = pitchSamples.reduce((a, b) => a + b) / pitchSamples.length;
                 liveHzBox.innerText = avgPitch.toFixed(1) + " Hz";
                 const diff = avgPitch - targetHz;
-                document.getElementById('needle').style.left = Math.max(5, Math.min(95, 50 + (diff * 3.5))) + "%";
+                document.getElementById('needle').style.left = Math.max(5, Math.min(95, 50 + (diff * 4))) + "%";
                 liveHzBox.classList.toggle('match', Math.abs(diff) < 0.8);
                 pitchSamples = [];
             }
             lastUpdateTime = now;
         }
         requestAnimationFrame(updateLoop);
-    }
-
-    function renderNotes() {
-        const grid = document.getElementById('note-grid');
-        grid.innerHTML = '';
-        const data = getFullData();
-        data[currentBridge].forEach(item => {
-            const hz = calcHz(item.s);
-            const btn = document.createElement('div');
-            btn.className = 'note-btn' + (Math.abs(hz - targetHz) < 0.1 ? ' active' : '');
-            btn.dataset.hz = hz;
-            btn.innerHTML = `<span class="n">${item.n}</span><span class="h">${hz} Hz</span>`;
-            btn.onclick = () => selectNote(item.n, hz);
-            grid.appendChild(btn);
-        });
     }
 
     document.querySelectorAll('.tab').forEach(t => {
@@ -316,7 +326,7 @@
     });
 
     document.getElementById('start-btn').onclick = startTuner;
-    window.onload = () => { initVisuals(); renderNotes(); updateVisualHighlights(targetHz); };
+    window.onload = () => { initVisuals(); renderNotes(); };
 </script>
 </body>
 </html>
