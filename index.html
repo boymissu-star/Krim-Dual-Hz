@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ตั้งสายขิม boymissu (Dual-Engine Mode)</title>
+    <title>ตั้งสายขิม boymissu (Smart Dual-Engine)</title>
     <style>
         :root {
             --wood: #5d4037; --accent: #00f2fe; --gold: #f1c40f;
@@ -49,13 +49,9 @@
         /* Overlay */
         #overlay { 
             position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
-            z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;
         }
-        #start-btn { 
-            padding: 22px 60px; font-size: 2rem; background: var(--gold); border: none; 
-            border-radius: 50px; font-weight: bold; color: #7b241c; cursor: pointer;
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
-        }
+        #start-btn { padding: 22px 60px; font-size: 2em; background: var(--gold); border: none; border-radius: 50px; font-weight: bold; color: #7b241c; cursor: pointer; }
         .ver-tag { margin-top: 20px; color: #aaa; font-size: 0.85rem; letter-spacing: 1px; }
 
         /* Responsive Desktop */
@@ -70,7 +66,7 @@
 <body>
 
 <div id="overlay">
-    <h1 style="color: var(--gold); margin-bottom: 10px;">ขิม Tuner</h1>
+    <h1 style="color: var(--gold); margin-bottom: 5px;">ตั้งสายขิม</h1>
     <button id="start-btn">เริ่มใช้งาน</button>
     <div id="version-text" class="ver-tag">กำลังตรวจสอบอุปกรณ์...</div>
 </div>
@@ -108,6 +104,7 @@
     let audioCtx, analyser, sr, isMobile;
     let target = 508.5, bridge = 'middle';
     
+    // ข้อมูลความถี่และชื่อโน้ตเดิมของคุณ (Fixed)
     const hzData = {
         left: [754.6, 683.4, 618.9, 560.5, 507.6, 459.7, 416.3],
         middle: [508.5, 460.5, 417.0, 377.6, 342.0, 309.7, 280.5],
@@ -121,7 +118,7 @@
 
     // 1. ตรวจสอบอุปกรณ์ทันที
     isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    document.getElementById('version-text').innerText = isMobile ? "MOBILE MODE: RESPONSIVE" : "DESKTOP MODE: PRECISION";
+    document.getElementById('version-text').innerText = isMobile ? "MOBILE MODE: STABLE" : "DESKTOP MODE: PRECISION";
 
     function setBridge(b) {
         bridge = b;
@@ -142,6 +139,7 @@
                 target = h; 
                 document.getElementById('note-name').innerText = n; 
                 document.getElementById('target-hz').innerText = h + ' Hz'; 
+                pitchBuffer = []; // ล้าง Buffer เสียงเก่าเมื่อเปลี่ยนโน้ต
                 renderGrid(); 
             };
             g.appendChild(btn);
@@ -150,29 +148,29 @@
 
     // 2. ฟังก์ชันเริ่มการทำงาน (แก้ปัญหาปุ่มค้าง)
     async function startApp() {
-        const startBtn = document.getElementById('start-btn');
-        startBtn.innerText = "กำลังเชื่อมต่อ...";
-        startBtn.disabled = true;
-
         try {
-            // ขออนุญาตใช้ไมค์
-            const constraints = isMobile ? 
-                { audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } } : 
-                { audio: { echoCancellation: true, noiseSuppression: true } };
+            // ขออนุญาตใช้ไมค์ ปิดระบบช่วยเสียงของมือถือทั้งหมด
+            const constraints = { 
+                audio: { 
+                    echoCancellation: false, 
+                    noiseSuppression: false, 
+                    autoGainControl: false 
+                } 
+            };
 
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             
             // สร้าง AudioContext (รองรับทั้งรุ่นเก่า/ใหม่)
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            sr = audioCtx.sampleRate;
             
             // สำคัญ: ต้อง Resume สำหรับ Mobile
             if (audioCtx.state === 'suspended') {
                 await audioCtx.resume();
             }
 
-            sr = audioCtx.sampleRate;
             analyser = audioCtx.createAnalyser();
-            analyser.fftSize = isMobile ? 1024 : 4096; 
+            analyser.fftSize = 2048; // ใช้ขนาดเดิมเพื่อความแม่นยำระดับหนึ่ง
             
             audioCtx.createMediaStreamSource(stream).connect(analyser);
             
@@ -181,47 +179,84 @@
             tick();
             
         } catch(e) { 
-            alert("ไม่สามารถใช้งานได้: " + e.message + "\nกรุณาอนุญาตให้เข้าถึงไมโครโฟน");
-            startBtn.innerText = "ลองใหม่อีกครั้ง";
-            startBtn.disabled = false;
+            alert("ไม่สามารถใช้งานได้: กรุณาอนุญาตให้เข้าถึงไมโครโฟน");
         }
     }
 
     // 3. วนลูปคำนวณเสียง
+    let pitchBuffer = []; // เก็บค่า Pitch เพื่อหา Median
     function tick() {
         const buf = new Float32Array(analyser.fftSize);
         analyser.getFloatTimeDomainData(buf);
         
         // เลือก Engine ตามอุปกรณ์
-        const p = isMobile ? getPitchAMDF(buf) : getPitchAC(buf);
+        const rawPitch = isMobile ? getPitchAMDF_Stable(buf) : getPitchAC(buf);
         
-        if (p > 50 && p < 1200) {
-            document.getElementById('live-hz').innerText = p.toFixed(1);
-            const diff = p - target;
-            // ปรับตำแหน่งเข็ม
-            const pos = 50 + (diff * 4);
-            document.getElementById('needle').style.left = Math.max(5, Math.min(95, pos)) + '%';
-            // เปลี่ยนสีถ้าตรงสาย (ความเพี้ยนไม่เกิน 0.8 Hz)
-            document.getElementById('live-hz').style.color = Math.abs(diff) < 0.8 ? '#00e676' : '#7b241c';
+        // --- ส่วน Mobile-Only Stabilizer ---
+        if (isMobile) {
+            if (rawPitch > 50 && rawPitch < 1200) {
+                pitchBuffer.push(rawPitch);
+                // เก็บแค่ 5 ค่าล่าสุดเพื่อหา Median (ลดอาการกระโดด)
+                if (pitchBuffer.length > 5) pitchBuffer.shift();
+            } else {
+                // ถ้าจับเสียงไม่ได้ ให้ค่อยๆ ล้าง Buffer
+                if (pitchBuffer.length > 0) pitchBuffer.shift();
+            }
+            
+            // หาค่า Median (ค่ากลาง) ของ Buffer
+            if (pitchBuffer.length >= 3) {
+                const sorted = [...pitchBuffer].sort((a, b) => a - b);
+                const medianPitch = sorted[Math.floor(sorted.length / 2)];
+                updateUI(medianPitch);
+            }
+        } else {
+            // โหมดคอม: แสดงผลตรงๆ ( AC แม่นอยู่แล้ว)
+            if (rawPitch > 0) updateUI(rawPitch);
         }
+        
         requestAnimationFrame(tick);
     }
 
-    // ENGINE มือถือ (AMDF: เร็ว)
-    function getPitchAMDF(buf) {
-        let minSum = 999, bestTau = -1;
-        let rms = 0; for(let i=0; i<512; i++) rms += buf[i]*buf[i];
-        if (Math.sqrt(rms/512) < 0.015) return -1; // เบาไปไม่คำนวณ
+    // ฟังก์ชันอัปเดตเข็มและตัวเลข
+    function updateUI(p) {
+        document.getElementById('live-hz').innerText = p.toFixed(1);
+        const diff = p - target;
+        const pos = 50 + (diff * 4); // ปรับ Sensitivity เข็ม
+        document.getElementById('needle').style.left = Math.max(5, Math.min(95, pos)) + '%';
+        document.getElementById('live-hz').style.color = Math.abs(diff) < 0.8 ? '#00e676' : '#7b241c';
+    }
 
-        for (let tau = Math.round(sr/1100); tau < Math.round(sr/150); tau++) {
+    // ENGINE มือถือเวอร์ชันปรับปรุง (เสถียรขึ้น)
+    function getPitchAMDF_Stable(buf) {
+        let size = buf.length / 2; // คำนวณครึ่งหนึ่ง
+        let minSum = Infinity, bestTau = -1;
+        
+        // 1. เช็คความดัง (ต้องดังพอสมควรถึงจะคำนวณ เพื่อเลี่ยงเสียงรบกวน)
+        let rms = 0; for(let i=0; i<size; i++) rms += buf[i]*buf[i];
+        if (Math.sqrt(rms/size) < 0.02) return -1; // เพิ่ม Threshold ความดัง
+
+        // 2. AMDF ค้นหาค่าเบี่ยงเบนต่ำสุด
+        // จำกัดช่วง Tau ให้แคบลงเฉพาะช่วงเสียงขิม (ประมาณ 100-1100 Hz)
+        const minTau = Math.round(sr / 1100);
+        const maxTau = Math.round(sr / 100);
+        
+        for (let tau = minTau; tau < maxTau; tau++) {
             let sum = 0;
-            for (let i = 0; i < 512; i++) sum += Math.abs(buf[i] - buf[i+tau]);
-            if (sum < minSum) { minSum = sum; bestTau = tau; }
+            for (let i = 0; i < size; i++) sum += Math.abs(buf[i] - buf[i+tau]);
+            
+            if (sum < minSum) {
+                minSum = sum;
+                bestTau = tau;
+            }
         }
+        
+        // 3. ตรวจสอบคุณภาพของ Pitch (ถ้ายอด AMDF ไม่ชัดเจน ให้ทิ้ง)
+        if (minSum / (rms * size) > 0.8) return -1; // ถ้ายอดมันตื้นเกินไป แสดงว่าเป็นเสียงรบกวน
+
         return sr / bestTau;
     }
 
-    // ENGINE คอม (Auto-Correlation: แม่น)
+    // ENGINE คอม (Auto-Correlation: แม่นยำสูง)
     function getPitchAC(buf) {
         let size = buf.length;
         let rms = 0; for(let i=0; i<size; i++) rms += buf[i]*buf[i];
@@ -242,12 +277,12 @@
     // ผูกเหตุการณ์ปุ่มกด
     document.getElementById('start-btn').addEventListener('click', startApp);
     
-    // วาดเส้นสายขิมประกอบ
+    // วาดเส้นสายขิมประกอบเมื่อโหลดเสร็จ
     window.onload = () => {
         const sg = document.getElementById('strings-group');
         for(let i=0; i<7; i++) {
             let y = 20 + (i*8);
-            sg.innerHTML += `<line x1="12" y1="${y}" x2="128" y2="${y}" stroke="#1a0f0d" stroke-width="0.5" opacity="0.3"></line>`;
+            sg.innerHTML += `<line x1="12" y1="${y}" x2="128" y2="${y}" stroke="#1a0f0d" stroke-width="0.5" opacity="0.2"></line>`;
         }
         renderGrid();
     };
