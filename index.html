@@ -8,130 +8,122 @@
         :root {
             --wood-dark: #3e2723; --wood-main: #5d4037; --accent-blue: #00f2fe; 
             --bridge-red: #b71c1c; --gold: #f1c40f; --white: #ffffff;
-            --success-green: #00e676; --panel-bg: #2d1b18;
+            --success-green: #00e676; --panel-bg: #2d1b18; --dark-bg: #1a1a1a;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0; padding: 0; font-family: 'Tahoma', sans-serif;
-            background-color: #1a1a1a; color: var(--white);
+            background-color: var(--dark-bg); color: var(--white);
             height: 100dvh; display: flex; justify-content: center; overflow: hidden;
         }
 
         .app-container {
-            width: 100%; height: 100%; max-width: 1200px;
+            width: 100%; height: 100%; max-width: 1400px;
             background: #fdf5e6; display: flex; flex-direction: column;
             position: relative;
         }
 
-        /* ส่วนหัว: สลับโหมด */
+        /* Header */
         .mode-header {
-            background: var(--panel-bg); padding: 10px; 
-            display: flex; justify-content: center; gap: 8px; 
-            border-bottom: 2px solid var(--gold); z-index: 10;
+            background: var(--panel-bg); padding: 12px; 
+            display: flex; justify-content: center; gap: 10px; 
+            border-bottom: 3px solid var(--gold); z-index: 20;
         }
         .m-btn {
-            flex: 1; max-width: 180px; background: #444; border: none; 
+            flex: 1; max-width: 200px; background: #444; border: 2px solid transparent; 
             color: white; padding: 10px; border-radius: 8px; 
-            cursor: pointer; font-size: 0.85em; font-weight: bold;
+            cursor: pointer; font-size: 0.9em; font-weight: bold; transition: 0.3s;
         }
-        .m-btn.active { background: var(--gold); color: #7b241c; }
+        .m-btn.active { background: var(--gold); color: #7b241c; border-color: white; }
 
-        /* พื้นที่แสดงผลรูปขิม (ย่อขนาดได้) */
-        .instrument-section {
-            background: #e5d9c5; padding: 10px; text-align: center;
-            display: flex; align-items: center; justify-content: center;
-            min-height: 140px; flex-shrink: 0;
+        /* Main Content Layout */
+        .main-content {
+            display: flex; flex-direction: column; flex: 1; overflow: hidden;
         }
-        #khim-svg { width: 100%; max-width: 350px; height: auto; }
+
+        /* Left Section: Visual & Tuner */
+        .visual-panel {
+            flex: 0.8; display: flex; flex-direction: column; 
+            background: #e5d9c5; border-bottom: 4px solid var(--bridge-red);
+        }
+
+        .instrument-box {
+            flex: 1; display: flex; align-items: center; justify-content: center; padding: 15px;
+        }
+        #khim-svg { width: 100%; max-width: 450px; height: auto; }
         .khim-string { stroke: #1a0f0d; stroke-width: 0.8; opacity: 0.4; }
         .string-highlight { fill: var(--accent-blue); opacity: 0; transition: 0.2s; cursor: pointer; }
-        .string-highlight.active { opacity: 1; filter: drop-shadow(0 0 5px var(--accent-blue)); }
+        .string-highlight.active { opacity: 1; filter: drop-shadow(0 0 8px var(--accent-blue)); }
 
-        /* แท็บหย่อง */
+        .tuner-display {
+            background: #4dd0e1; padding: 15px; text-align: center;
+            border-top: 4px solid #d32f2f;
+        }
+
+        /* Right Section: Controls */
+        .control-panel {
+            flex: 1.2; display: flex; flex-direction: column; background: var(--bridge-red); overflow: hidden;
+        }
+
         .bridge-tabs { 
-            display: flex; background: var(--panel-bg); 
-            padding: 5px; gap: 4px; flex-shrink: 0;
+            display: flex; background: var(--panel-bg); padding: 6px; gap: 6px;
         }
         .tab { 
-            flex: 1; padding: 12px 5px; text-align: center; cursor: pointer; 
-            border-radius: 6px; font-weight: bold; color: #aaa; font-size: 0.8em;
+            flex: 1; padding: 14px 5px; text-align: center; cursor: pointer; 
+            border-radius: 6px; font-weight: bold; color: #aaa; font-size: 0.85em; transition: 0.2s;
         }
-        .tab.active { background: var(--bridge-red); color: var(--white); }
+        .tab.active { background: var(--bridge-red); color: var(--white); box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
 
-        /* พื้นที่ปุ่มโน้ต (เลื่อนได้) */
         .note-grid-container {
-            flex: 1; overflow-y: auto; background: var(--bridge-red);
-            padding: 12px; -webkit-overflow-scrolling: touch;
+            flex: 1; overflow-y: auto; padding: 15px; -webkit-overflow-scrolling: touch;
         }
         .note-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
         }
         .note-btn {
-            background: rgba(255,255,255,0.08); padding: 15px 10px; border-radius: 12px;
+            background: rgba(255,255,255,0.08); padding: 20px 10px; border-radius: 15px;
             display: flex; flex-direction: column; align-items: center; cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15); transition: 0.2s;
         }
-        .note-btn.active { background: var(--gold); border-color: white; transform: scale(0.98); }
-        .note-btn .n { font-size: 1.2em; font-weight: bold; color: white; }
-        .note-btn .h { font-size: 0.8em; color: rgba(255,255,255,0.7); }
+        .note-btn.active { background: var(--gold); border-color: white; transform: scale(0.97); }
+        .note-btn .n { font-size: 1.4em; font-weight: bold; color: white; }
+        .note-btn .h { font-size: 0.9em; color: rgba(255,255,255,0.7); }
         .note-btn.active .n, .note-btn.active .h { color: #7b241c; }
 
-        /* ส่วนแสดงผลจูนเนอร์ (Sticky Bottom) */
-        .tuner-footer {
-            background: #4dd0e1; padding: 15px 10px; text-align: center;
-            border-top: 4px solid #d32f2f; flex-shrink: 0;
-            display: grid; grid-template-columns: 1fr 1.5fr; align-items: center; gap: 10px;
-        }
-
-        .target-info { text-align: left; padding-left: 10px; }
-        .note-display-title { font-size: 1.4em; font-weight: bold; color: #000; display: block; }
-        .target-hz-text { font-size: 1em; font-weight: bold; color: #d32f2f; }
-
-        .live-display { display: flex; flex-direction: column; align-items: center; }
+        /* Tuner Elements */
+        .tuner-info { display: flex; justify-content: space-around; align-items: center; margin-bottom: 10px; }
+        .note-name-big { font-size: 2.2em; font-weight: bold; color: #000; }
+        .hz-target-small { font-size: 1.2em; font-weight: bold; color: #d32f2f; }
+        
         .live-hz-box {
-            background: var(--gold); color: #7b241c;
-            padding: 8px 20px; border-radius: 10px; font-size: 1.8em; font-weight: bold;
-            border: 2px solid white; min-width: 140px;
+            background: var(--gold); color: #7b241c; margin: 5px auto;
+            padding: 10px 25px; border-radius: 12px; font-size: 2.5em; font-weight: bold;
+            border: 3px solid white; display: inline-block; min-width: 180px;
         }
-        .live-hz-box.match { background-color: var(--success-green) !important; }
+        .live-hz-box.match { background-color: var(--success-green) !important; color: #000; }
 
-        .scale-container {
-            grid-column: span 2; width: 100%; position: relative; height: 50px; margin-top: 5px;
-        }
-        .scale-ticks { 
-            width: 100%; height: 20px; border-bottom: 2px solid white;
-            background-image: repeating-linear-gradient(90deg, white 0px, white 1px, transparent 1px, transparent 10%);
-        }
-        .needle-pin {
-            position: absolute; top: 0; left: 50%; width: 3px; height: 35px;
+        .scale-wrap { width: 100%; position: relative; height: 40px; margin-top: 10px; padding: 0 10px; }
+        .scale-line { width: 100%; height: 2px; background: white; position: relative; top: 20px; }
+        .scale-center { position: absolute; left: 50%; top: 10px; height: 20px; width: 2px; background: #000; }
+        .needle {
+            position: absolute; top: 0; left: 50%; width: 4px; height: 30px;
             background: #ff3d00; transform: translateX(-50%); transition: left 0.1s ease-out;
-            z-index: 5;
-        }
-        .needle-pin::after {
-            content: ''; position: absolute; bottom: -5px; left: -4px;
-            border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 10px solid #ff3d00;
         }
 
-        /* Overlay เริ่มต้น */
-        #start-overlay { 
-            position: absolute; inset: 0; background: rgba(0,0,0,0.9); 
-            z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-        }
-        #start-btn { 
-            padding: 20px 50px; font-size: 1.8em; background: var(--gold); 
-            border: none; border-radius: 50px; font-weight: bold; color: #7b241c; 
-        }
+        /* Overlay */
+        #start-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #start-btn { padding: 25px 60px; font-size: 2em; background: var(--gold); border: none; border-radius: 50px; font-weight: bold; color: #7b241c; cursor: pointer; box-shadow: 0 0 20px var(--gold); }
 
-        /* ปรับแต่งสำหรับ Desktop / Landscape */
-        @media (min-width: 768px) {
-            .app-container { flex-direction: row; height: 90vh; border-radius: 20px; overflow: hidden; margin: auto; }
-            .left-panel { flex: 1.2; display: flex; flex-direction: column; border-right: 4px solid var(--bridge-red); }
-            .right-panel { flex: 1; display: flex; flex-direction: column; }
-            .tuner-footer { grid-template-columns: 1fr; grid-template-rows: auto auto auto; padding: 30px; height: 100%; }
-            .scale-container { grid-column: span 1; }
-            .note-grid { grid-template-columns: repeat(2, 1fr); }
+        /* --- DESKTOP / TABLET LANDSCAPE --- */
+        @media (min-width: 992px) {
+            .main-content { flex-direction: row; }
+            .visual-panel { flex: 1; border-bottom: none; border-right: 4px solid var(--bridge-red); }
+            .control-panel { flex: 1; }
+            .instrument-box { padding: 40px; }
+            .note-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .tuner-display { padding: 40px 20px; }
         }
     </style>
 </head>
@@ -139,57 +131,58 @@
 
 <div class="app-container">
     <div id="start-overlay">
-        <h2 style="color: var(--gold);">ตั้งสายขิม boymissu</h2>
-        <button id="start-btn">เริ่มตั้งสาย</button>
+        <h1 style="color: var(--gold); margin-bottom: 20px;">ตั้งสายขิม โดย boymissu</h1>
+        <button id="start-btn">เริ่มใช้งาน</button>
     </div>
 
-    <div class="mode-header">
+    <header class="mode-header">
         <button id="btnThai" class="m-btn active" onclick="changeMode('thai')">กรมศิลป์ (โด 508.5)</button>
         <button id="btnInter" class="m-btn" onclick="changeMode('inter')">สากล (A=440)</button>
-    </div>
+    </header>
 
-    <section class="instrument-section">
-        <svg id="khim-svg" viewBox="0 0 140 85">
-            <path d="M25,10 L115,10 Q140,10 135,40 Q130,75 115,77 L25,77 Q10,75 5,40 Q0,10 25,10 Z" fill="var(--wood-dark)"/>
-            <path d="M28,13 L112,13 Q132,13 128,40 Q124,70 112,72 L28,72 Q15,70 11,40 Q7,13 28,13 Z" fill="var(--wood-main)"/>
-            <rect x="55" y="15" width="2" height="58" fill="var(--bridge-red)"/> 
-            <rect x="85" y="15" width="2" height="58" fill="var(--bridge-red)"/> 
-            <g id="strings-group"></g>
-            <g id="highlights-group"></g>
-        </svg>
-    </section>
+    <main class="main-content">
+        <section class="visual-panel">
+            <div class="instrument-box">
+                <svg id="khim-svg" viewBox="0 0 140 85">
+                    <path d="M25,10 L115,10 Q140,10 135,40 Q130,75 115,77 L25,77 Q10,75 5,40 Q0,10 25,10 Z" fill="var(--wood-dark)"/>
+                    <path d="M28,13 L112,13 Q132,13 128,40 Q124,70 112,72 L28,72 Q15,70 11,40 Q7,13 28,13 Z" fill="var(--wood-main)"/>
+                    <rect x="55" y="15" width="2" height="58" fill="var(--bridge-red)"/> 
+                    <rect x="85" y="15" width="2" height="58" fill="var(--bridge-red)"/> 
+                    <g id="strings-group"></g>
+                    <g id="highlights-group"></g>
+                </svg>
+            </div>
+            
+            <div class="tuner-display">
+                <div class="tuner-info">
+                    <span class="note-name-big" id="display-note">โด</span>
+                    <span class="hz-target-small" id="display-hz-target">508.5 Hz</span>
+                </div>
+                <div class="live-hz-box" id="live-hz-val">0.0 Hz</div>
+                <div class="scale-wrap">
+                    <div class="scale-line"></div>
+                    <div class="scale-center"></div>
+                    <div id="needle" class="needle"></div>
+                </div>
+            </div>
+        </section>
 
-    <div class="bridge-tabs">
-        <div class="tab" data-b="left">หย่องนอก</div>
-        <div class="tab active" data-b="middle">หย่องกลาง</div>
-        <div class="tab" data-b="right">หย่องใน</div>
-    </div>
-
-    <div class="note-grid-container">
-        <nav id="note-grid" class="note-grid"></nav>
-    </div>
-
-    <footer class="tuner-footer">
-        <div class="target-info">
-            <span class="note-display-title" id="display-note">โด</span>
-            <span class="target-hz-text" id="display-hz-target">508.5 Hz</span>
-        </div>
-        <div class="live-display">
-            <div class="live-hz-box" id="live-hz-val">0.0 Hz</div>
-        </div>
-        <div class="scale-container">
-            <div class="scale-ticks"></div>
-            <div class="needle-pin" id="needle"></div>
-        </div>
-    </footer>
+        <section class="control-panel">
+            <div class="bridge-tabs">
+                <div class="tab" data-b="left">หย่องนอก</div>
+                <div class="tab active" data-b="middle">หย่องกลาง</div>
+                <div class="tab" data-b="right">หย่องใน</div>
+            </div>
+            <div class="note-grid-container">
+                <div id="note-grid" class="note-grid"></div>
+            </div>
+        </section>
+    </main>
 </div>
 
 <script>
-    let currentMode = 'thai';
-    let currentBridge = 'middle';
-    let targetHz = 508.5;
-    let audioContext, analyser, lastUpdateTime = 0;
-    let pitchSamples = [];
+    let currentMode = 'thai', currentBridge = 'middle', targetHz = 508.5;
+    let audioContext, analyser, lastUpdateTime = 0, pitchSamples = [];
 
     const thaiHz = {
         left: [754.6, 683.4, 618.9, 560.5, 507.6, 459.7, 416.3],
@@ -227,112 +220,4 @@
         ['left', 'middle', 'right'].forEach(bKey => {
             noteNames[bKey].forEach((name, idx) => {
                 const hz = getHz(bKey, idx);
-                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                rect.setAttribute("x", xPos[bKey]); rect.setAttribute("y", 20 + (idx * 8) - 2.5);
-                rect.setAttribute("width", "15"); rect.setAttribute("height", "5");
-                rect.setAttribute("rx", "2"); rect.setAttribute("class", "string-highlight");
-                rect.setAttribute("data-hz", hz);
-                rect.onclick = () => selectNote(name, hz);
-                svgHighs.appendChild(rect);
-            });
-        });
-        updateVisualHighlights();
-    }
-
-    function selectNote(name, hz) {
-        targetHz = hz;
-        document.getElementById('display-note').innerText = name;
-        document.getElementById('display-hz-target').innerText = hz + " Hz";
-        updateVisualHighlights();
-        renderNotes();
-    }
-
-    function changeMode(mode) {
-        currentMode = mode;
-        document.getElementById('btnThai').classList.toggle('active', mode === 'thai');
-        document.getElementById('btnInter').classList.toggle('active', mode === 'inter');
-        const currentName = document.getElementById('display-note').innerText;
-        const idx = noteNames[currentBridge].indexOf(currentName);
-        selectNote(currentName, getHz(currentBridge, idx === -1 ? 0 : idx));
-        initVisuals();
-    }
-
-    function updateVisualHighlights() {
-        document.querySelectorAll('.string-highlight').forEach(el => {
-            el.classList.toggle('active', Math.abs(parseFloat(el.getAttribute('data-hz')) - targetHz) < 0.1);
-        });
-    }
-
-    function renderNotes() {
-        const grid = document.getElementById('note-grid');
-        grid.innerHTML = '';
-        noteNames[currentBridge].forEach((name, idx) => {
-            const hz = getHz(currentBridge, idx);
-            const btn = document.createElement('div');
-            btn.className = 'note-btn' + (Math.abs(hz - targetHz) < 0.1 ? ' active' : '');
-            btn.innerHTML = `<span class="n">${name}</span><span class="h">${hz} Hz</span>`;
-            btn.onclick = () => selectNote(name, hz);
-            grid.appendChild(btn);
-        });
-    }
-
-    async function startTuner() {
-        document.getElementById('start-overlay').style.display = 'none';
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 4096;
-            audioContext.createMediaStreamSource(stream).connect(analyser);
-            requestAnimationFrame(updateLoop);
-        } catch (e) { alert("กรุณาอนุญาตไมค์ครับ"); }
-    }
-
-    function updateLoop(now) {
-        if (!analyser) return;
-        const buffer = new Float32Array(analyser.fftSize);
-        analyser.getFloatTimeDomainData(buffer);
-        let rms = 0;
-        for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
-        rms = Math.sqrt(rms / buffer.length);
-        if (rms > 0.01) { 
-            const pitch = yinPitch(buffer, audioContext.sampleRate);
-            if (pitch > 50 && pitch < 1200) pitchSamples.push(pitch);
-        }
-        if (now - lastUpdateTime > 120) {
-            if (pitchSamples.length > 0) {
-                const avgPitch = pitchSamples.reduce((a, b) => a + b) / pitchSamples.length;
-                document.getElementById('live-hz-val').innerText = avgPitch.toFixed(1) + " Hz";
-                const diff = avgPitch - targetHz;
-                document.getElementById('needle').style.left = Math.max(5, Math.min(95, 50 + (diff * 4))) + "%";
-                document.getElementById('live-hz-val').classList.toggle('match', Math.abs(diff) < 0.8);
-                pitchSamples = [];
-            }
-            lastUpdateTime = now;
-        }
-        requestAnimationFrame(updateLoop);
-    }
-
-    function yinPitch(buffer, sampleRate) {
-        const threshold = 0.15; const len = Math.floor(buffer.length / 2); const df = new Float32Array(len);
-        for (let tau = 0; tau < len; tau++) { for (let i = 0; i < len; i++) { const delta = buffer[i] - buffer[i + tau]; df[tau] += delta * delta; } }
-        const cmndf = new Float32Array(len); cmndf[0] = 1; let sum = 0;
-        for (let tau = 1; tau < len; tau++) { sum += df[tau]; cmndf[tau] = df[tau] / (sum / tau || 1); }
-        let tau = -1; for (let t = 1; t < len; t++) { if (cmndf[t] < threshold) { tau = t; break; } }
-        return tau === -1 ? -1 : sampleRate / tau;
-    }
-
-    document.querySelectorAll('.tab').forEach(t => {
-        t.onclick = (e) => {
-            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            e.target.classList.add('active');
-            currentBridge = e.target.dataset.b;
-            renderNotes();
-        };
-    });
-
-    document.getElementById('start-btn').onclick = startTuner;
-    window.onload = () => { initVisuals(); renderNotes(); };
-</script>
-</body>
-</html>
+                const rect = document.
