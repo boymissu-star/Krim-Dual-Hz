@@ -1,249 +1,807 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ตั้งสายขิม boymissu (Dual-Engine Pro)</title>
-    <style>
-        :root {
-            --wood: #5d4037; --accent: #00f2fe; --gold: #f1c40f;
-            --bridge: #b71c1c; --bg: #1a1a1a; --success: #00e676;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-        body {
-            margin: 0; font-family: 'Tahoma', sans-serif; background: var(--bg); color: white;
-            height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
-        }
-        
-        .visual-box { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; background: #e5d9c5; }
-        #khim-svg { width: 100%; max-width: 400px; height: auto; }
-        
-        .display-box { 
-            flex: 0.8; background: #4dd0e1; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; border-top: 4px solid var(--bridge);
-        }
-        .hz-live { font-size: 3.5rem; font-weight: bold; color: #7b241c; line-height: 1; }
-        .hz-target { font-size: 1.1rem; color: #d32f2f; font-weight: bold; margin-top: 5px; }
-        
-        .needle-area { width: 100%; height: 35px; position: relative; margin-top: 10px; }
-        .needle { 
-            position: absolute; left: 50%; width: 4px; height: 30px; 
-            background: #ff3d00; transform: translateX(-50%); transition: left 0.1s linear; 
-        }
-        .center-line { position: absolute; left: 50%; height: 100%; width: 2px; background: #000; opacity: 0.2; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ตั้งสายขิม · Boymissu Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0e0e0e;
+  --panel:     #161616;
+  --surface:   #1f1f1f;
+  --border:    #2a2a2a;
+  --accent:    #d4a849;
+  --accent2:   #c08030;
+  --flat:      #c2b280;
+  --sharp:     #5b8fcc;
+  --green:     #4caf7d;
+  --red:       #e05555;
+  --text:      #e8e0d0;
+  --muted:     #6b6558;
+  --mono:      'IBM Plex Mono', monospace;
+  --thai:      'Sarabun', sans-serif;
+  --display:   'Bebas Neue', sans-serif;
+}
 
-        .control-section { flex: 1.2; background: var(--bridge); display: flex; flex-direction: column; overflow: hidden; }
-        .tabs { display: flex; background: #2d1b18; }
-        .tab { flex: 1; padding: 15px; text-align: center; font-weight: bold; color: #888; font-size: 0.9rem; cursor: pointer; }
-        .tab.active { color: white; border-bottom: 4px solid var(--gold); background: rgba(255,255,255,0.05); }
-        
-        .grid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
-        .note-btn { 
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-            padding: 18px; border-radius: 12px; text-align: center; color: white; cursor: pointer;
-        }
-        .note-btn.active { background: var(--gold); color: #7b241c; font-weight: bold; border-color: white; }
-        .note-btn b { font-size: 1.3rem; display: block; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; margin: 0; padding: 0; }
 
-        #overlay { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
-            z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;
-        }
-        #start-btn { padding: 22px 60px; font-size: 2em; background: var(--gold); border: none; border-radius: 50px; font-weight: bold; color: #7b241c; cursor: pointer; }
-        .ver-tag { margin-top: 20px; color: #aaa; font-size: 0.85rem; letter-spacing: 1px; }
+body {
+  font-family: var(--thai);
+  background: var(--bg);
+  color: var(--text);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-        @media (min-width: 992px) {
-            body { flex-direction: row; }
-            .visual-box, .display-box { flex: 1; height: 100%; }
-            .control-section { width: 450px; height: 100%; }
-            .hz-live { font-size: 5rem; }
-        }
-    </style>
+/* ─── OVERLAY ─────────────────────────────────── */
+#overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: #0e0e0eee;
+  backdrop-filter: blur(8px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0;
+}
+.overlay-title {
+  font-family: var(--display);
+  font-size: clamp(3rem, 10vw, 6rem);
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  line-height: 1;
+}
+.overlay-sub {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-top: 6px;
+  margin-bottom: 40px;
+}
+#start-btn {
+  font-family: var(--display);
+  font-size: 1.4rem;
+  letter-spacing: 0.15em;
+  padding: 16px 52px;
+  background: var(--accent);
+  color: #0e0e0e;
+  border: none; border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+#start-btn:hover { background: #e8bc60; }
+#start-btn:active { transform: scale(0.97); }
+#device-tag {
+  margin-top: 20px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+}
+
+/* ─── LAYOUT ─────────────────────────────────── */
+.top-section {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.khim-panel {
+  flex: 1;
+  background: #1a1610;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-right: 1px solid var(--border);
+}
+
+#khim-svg { width: 100%; max-width: 340px; height: auto; }
+
+/* ─── METER PANEL ─────────────────────────────── */
+.meter-panel {
+  width: 200px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 12px;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.note-display {
+  text-align: center;
+  width: 100%;
+}
+.note-thai {
+  font-family: var(--thai);
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+.note-hz {
+  font-family: var(--mono);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+  transition: color 0.2s;
+}
+.note-hz-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+}
+
+/* VU-style ring meter */
+.ring-meter {
+  position: relative;
+  width: 130px; height: 130px;
+}
+.ring-meter svg { width: 100%; height: 100%; }
+.ring-bg { fill: none; stroke: var(--surface); stroke-width: 8; }
+.ring-fill { fill: none; stroke-width: 8; stroke-linecap: round;
+  transition: stroke-dashoffset 0.08s ease-out, stroke 0.2s; }
+.ring-center-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.cent-value {
+  font-family: var(--mono);
+  font-size: 1.4rem;
+  font-weight: 600;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.cent-label {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  margin-top: 2px;
+}
+
+/* Tuning direction badges */
+.direction-badge {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  padding: 5px 14px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  background: var(--surface);
+  color: var(--muted);
+  transition: background 0.2s, color 0.2s;
+  text-align: center;
+  width: 100%;
+}
+.direction-badge.flat { background: rgba(91,143,204,0.15); color: var(--sharp); }
+.direction-badge.sharp { background: rgba(192,128,48,0.15); color: var(--flat); }
+.direction-badge.in-tune { background: rgba(76,175,125,0.15); color: var(--green); }
+
+/* Target hz display */
+.target-row {
+  text-align: center; width: 100%;
+}
+.target-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+}
+.target-hz-val {
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ─── NEEDLE BAR ─────────────────────────────── */
+.needle-bar-wrap {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  position: relative;
+}
+.needle-bar {
+  position: relative;
+  height: 32px;
+  background: var(--surface);
+  border-radius: 3px;
+  overflow: hidden;
+}
+/* zone coloring */
+.needle-bar::before {
+  content: '';
+  position: absolute;
+  left: 30%; right: 30%; top: 0; bottom: 0;
+  background: rgba(76,175,125,0.08);
+}
+.needle-bar-center {
+  position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 1px; background: var(--muted); opacity: 0.4;
+}
+.needle-marks {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10%;
+  pointer-events: none;
+}
+.needle-tick {
+  width: 1px; height: 40%;
+  background: var(--border);
+}
+.needle-el {
+  position: absolute;
+  top: 4px; bottom: 4px;
+  width: 3px; border-radius: 2px;
+  background: var(--accent);
+  left: 50%;
+  transform: translateX(-50%);
+  transition: left 0.08s ease-out, background 0.2s;
+  box-shadow: 0 0 8px rgba(212,168,73,0.5);
+}
+.needle-labels {
+  display: flex; justify-content: space-between;
+  padding: 4px 2px 0;
+  font-family: var(--mono); font-size: 0.55rem; color: var(--muted);
+}
+
+/* ─── CONTROL SECTION ─────────────────────────── */
+.control-section {
+  flex: 0 0 auto;
+  height: 42vh;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tab {
+  flex: 1; padding: 13px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  text-transform: uppercase;
+}
+.tab.active { color: var(--accent); border-color: var(--accent); }
+
+/* Note grid */
+.note-grid {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 10px;
+}
+.note-grid::-webkit-scrollbar { width: 3px; }
+.note-grid::-webkit-scrollbar-track { background: transparent; }
+.note-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.note-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+  user-select: none;
+}
+.note-btn:active { transform: scale(0.94); }
+.note-btn.active {
+  background: rgba(212,168,73,0.12);
+  border-color: var(--accent);
+}
+.note-btn-name {
+  font-family: var(--thai);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+  line-height: 1.2;
+}
+.note-btn.active .note-btn-name { color: var(--accent); }
+.note-btn-hz {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--muted);
+  display: block;
+  margin-top: 2px;
+}
+
+/* Status bar */
+.status-bar {
+  padding: 6px 14px;
+  display: flex; align-items: center; gap: 8px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--muted);
+  transition: background 0.3s;
+}
+.status-dot.active { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-text {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+/* ─── RESPONSIVE: DESKTOP ─────────────────────── */
+@media (min-width: 700px) {
+  body { flex-direction: row; }
+  .top-section {
+    flex: 1;
+    height: 100%;
+  }
+  .khim-panel { flex: 1; height: 100%; border-right: 1px solid var(--border); border-bottom: none; }
+  .meter-panel { width: 220px; height: 100%; border-right: 1px solid var(--border); }
+  .main-right {
+    flex: 0 0 340px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .needle-bar-wrap { border-bottom: 1px solid var(--border); }
+  .control-section { flex: 1; height: auto; }
+  .note-hz { font-size: 2.4rem; }
+}
+
+/* ─── RESPONSIVE: MOBILE STACK ────────────────── */
+@media (max-width: 699px) {
+  .top-section { flex-direction: row; height: 38vh; }
+  .khim-panel { padding: 10px; }
+  .meter-panel { width: 140px; padding: 12px 8px; }
+  .ring-meter { width: 100px; height: 100px; }
+  .note-hz { font-size: 1.5rem; }
+  .control-section { height: auto; flex: 1; }
+  .note-grid { grid-template-columns: repeat(4, 1fr); padding: 8px; gap: 5px; }
+}
+
+/* Grain texture overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.4;
+}
+</style>
 </head>
 <body>
 
+<!-- OVERLAY -->
 <div id="overlay">
-    <h1 style="color: var(--gold); margin-bottom: 5px;">ตั้งสายขิม Dual-Hz</h1>
-    <button id="start-btn">เริ่มใช้งาน</button>
-    <div id="version-text" class="ver-tag">ตรวจจับอุปกรณ์...</div>
+  <div class="overlay-title">ขิม TUNER</div>
+  <div class="overlay-sub">Boymissu Pro · YIN Algorithm</div>
+  <button id="start-btn">เริ่มใช้งาน</button>
+  <div id="device-tag">ตรวจจับอุปกรณ์...</div>
 </div>
 
-<div class="visual-box">
-    <svg id="khim-svg" viewBox="0 0 140 85">
-        <path d="M25,10 L115,10 Q140,10 135,40 Q130,75 115,77 L25,77 Q10,75 5,40 Q0,10 25,10 Z" fill="#3e2723"/>
-        <path d="M28,13 L112,13 Q132,13 128,40 Q124,70 112,72 L28,72 Q15,70 11,40 Q7,13 28,13 Z" fill="#5d4037"/>
-        <rect x="55" y="15" width="2" height="58" fill="#b71c1c"/> 
-        <rect x="85" y="15" width="2" height="58" fill="#b71c1c"/> 
-        <g id="strings-group"></g>
+<!-- TOP SECTION: Khim + Meter -->
+<div class="top-section">
+
+  <!-- Khim visual -->
+  <div class="khim-panel">
+    <svg id="khim-svg" viewBox="0 0 160 100">
+      <!-- Body shadow -->
+      <ellipse cx="80" cy="55" rx="75" ry="43" fill="#0a0806" opacity="0.5"/>
+      <!-- Body -->
+      <path d="M22,12 L138,12 Q162,12 157,46 Q152,84 138,86 L22,86 Q7,84 3,46 Q-2,12 22,12Z" fill="#2a1f14"/>
+      <!-- Wood grain top -->
+      <path d="M25,15 L135,15 Q155,15 151,46 Q147,77 135,79 L25,79 Q11,77 7,46 Q3,15 25,15Z" fill="#3d2b1a"/>
+      <!-- Wood grain lines -->
+      <path d="M20,30 Q80,28 140,30" stroke="#4a3520" stroke-width="0.4" fill="none" opacity="0.6"/>
+      <path d="M18,42 Q80,40 143,42" stroke="#4a3520" stroke-width="0.3" fill="none" opacity="0.5"/>
+      <path d="M20,55 Q80,53 140,55" stroke="#4a3520" stroke-width="0.3" fill="none" opacity="0.4"/>
+      <path d="M22,68 Q80,66 138,68" stroke="#4a3520" stroke-width="0.3" fill="none" opacity="0.3"/>
+      <!-- Bridges -->
+      <rect x="57" y="14" width="3" height="74" rx="1" fill="#8b0000"/>
+      <rect x="59" y="14" width="1" height="74" fill="#ff4444" opacity="0.2"/>
+      <rect x="100" y="14" width="3" height="74" rx="1" fill="#8b0000"/>
+      <rect x="102" y="14" width="1" height="74" fill="#ff4444" opacity="0.2"/>
+      <!-- Bridge labels -->
+      <text x="37" y="11" font-family="Sarabun,sans-serif" font-size="5" fill="#c2a060" opacity="0.8">นอก</text>
+      <text x="74" y="11" font-family="Sarabun,sans-serif" font-size="5" fill="#c2a060" opacity="0.8">กลาง</text>
+      <text x="112" y="11" font-family="Sarabun,sans-serif" font-size="5" fill="#c2a060" opacity="0.8">ใน</text>
+      <!-- Strings group -->
+      <g id="strings-svg" opacity="0.7"></g>
+      <!-- Frame highlight -->
+      <path d="M25,15 Q80,13 135,15" stroke="#6b4f30" stroke-width="0.8" fill="none" opacity="0.5"/>
+      <path d="M7,46 Q5,40 25,15" stroke="#6b4f30" stroke-width="0.6" fill="none" opacity="0.4"/>
+      <path d="M153,46 Q155,40 135,15" stroke="#6b4f30" stroke-width="0.6" fill="none" opacity="0.4"/>
     </svg>
-</div>
+  </div>
 
-<div class="display-box">
-    <div id="note-name" style="font-size: 1.6rem; font-weight: bold; color: #000;">โด</div>
-    <div id="live-hz" class="hz-live">---</div>
-    <div id="target-hz" class="hz-target">508.5 Hz</div>
-    <div class="needle-area">
-        <div class="center-line"></div>
-        <div id="needle" class="needle"></div>
+  <!-- Meter panel -->
+  <div class="meter-panel">
+    <div class="note-display">
+      <div class="note-thai" id="note-name">— เลือกสาย —</div>
+      <div class="note-hz" id="live-hz">---</div>
+      <div class="note-hz-label">Hz LIVE</div>
     </div>
+
+    <!-- Ring meter -->
+    <div class="ring-meter">
+      <svg viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="38" stroke-dasharray="200" stroke-dashoffset="0" transform="rotate(-210 50 50)"/>
+        <circle id="ring-arc" class="ring-fill" cx="50" cy="50" r="38"
+          stroke-dasharray="239.4" stroke-dashoffset="239.4"
+          stroke="var(--accent)"
+          transform="rotate(-210 50 50)"/>
+      </svg>
+      <div class="ring-center-text">
+        <div class="cent-value" id="cent-val">±0</div>
+        <div class="cent-label">CENT</div>
+      </div>
+    </div>
+
+    <div class="direction-badge" id="dir-badge">รอสัญญาณ</div>
+
+    <div class="target-row">
+      <div class="target-label">TARGET</div>
+      <div class="target-hz-val" id="target-hz">508.5 Hz</div>
+    </div>
+  </div>
+
+</div><!-- end top-section -->
+
+<!-- NEEDLE BAR -->
+<div class="needle-bar-wrap">
+  <div class="needle-bar">
+    <div class="needle-bar-center"></div>
+    <div class="needle-marks">
+      <div class="needle-tick"></div>
+      <div class="needle-tick"></div>
+      <div class="needle-tick" style="height:60%;opacity:0.6"></div>
+      <div class="needle-tick"></div>
+      <div class="needle-tick"></div>
+    </div>
+    <div class="needle-el" id="needle"></div>
+  </div>
+  <div class="needle-labels">
+    <span>-50¢</span><span>-25¢</span><span>0</span><span>+25¢</span><span>+50¢</span>
+  </div>
 </div>
 
+<!-- CONTROL SECTION -->
+<div class="main-right" style="display:contents">
 <div class="control-section">
-    <div class="tabs">
-        <div class="tab" id="tab-left" onclick="setBridge('left')">นอก</div>
-        <div class="tab active" id="tab-middle" onclick="setBridge('middle')">กลาง</div>
-        <div class="tab" id="tab-right" onclick="setBridge('right')">ใน</div>
-    </div>
-    <div id="grid" class="grid"></div>
+  <div class="tabs">
+    <div class="tab" id="tab-left"  onclick="setBridge('left')">นอก</div>
+    <div class="tab active" id="tab-middle" onclick="setBridge('middle')">กลาง</div>
+    <div class="tab" id="tab-right" onclick="setBridge('right')">ใน</div>
+  </div>
+  <div id="note-grid" class="note-grid"></div>
+  <div class="status-bar">
+    <div class="status-dot" id="status-dot"></div>
+    <div class="status-text" id="status-text">กดเริ่มใช้งาน</div>
+  </div>
+</div>
 </div>
 
 <script>
-    let audioCtx, analyser, sr, isMobile;
-    let target = 508.5, bridge = 'middle';
-    let pitchBuffer = []; 
+/* ── CONFIG ───────────────────────────────────────────── */
+const CONFIG = {
+  RMS_THRESHOLD_MOBILE:  0.018,
+  RMS_THRESHOLD_DESKTOP: 0.010,
+  FFT_MOBILE:   2048,
+  FFT_DESKTOP:  4096,
+  PITCH_BUFFER: 7,
+  IN_TUNE_CENTS: 5,
+};
 
-    const hzData = {
-        left: [754.6, 683.4, 618.9, 560.5, 507.6, 459.7, 416.3],
-        middle: [508.5, 460.5, 417.0, 377.6, 342.0, 309.7, 280.5],
-        right: [342.0, 309.7, 280.5, 254.0, 230.0, 208.3, 188.6]
+/* ── DATA ─────────────────────────────────────────────── */
+const hzData = {
+  left:   [754.6, 683.4, 618.9, 560.5, 507.6, 459.7, 416.3],
+  middle: [508.5, 460.5, 417.0, 377.6, 342.0, 309.7, 280.5],
+  right:  [342.0, 309.7, 280.5, 254.0, 230.0, 208.3, 188.6]
+};
+const noteNames = {
+  left:   ["ซอล", "ฟาร์", "มี", "เร", "โด", "ที", "ลา"],
+  middle: ["โด", "ที", "ลา", "ซอล", "ฟาร์", "มี", "เร"],
+  right:  ["ฟาร์", "มี", "เร", "โด", "ที", "ลา", "ซอล"]
+};
+const octaveLabels = {
+  left:   ["สูง","สูง","กลาง","กลาง","กลาง","ต่ำ","ต่ำ"],
+  middle: ["กลาง","กลาง","กลาง","กลาง","ต่ำ","ต่ำ","ต่ำ"],
+  right:  ["กลาง","กลาง","ต่ำ","ต่ำ","ต่ำ","ต่ำ","ต่ำ"]
+};
+
+/* ── STATE ────────────────────────────────────────────── */
+let audioCtx, analyser, sr, isMobile;
+let target = 508.5, bridge = 'middle', targetName = 'โด';
+let pitchBuffer = [];
+let isRunning = false;
+
+/* ── INIT ─────────────────────────────────────────────── */
+isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+document.getElementById('device-tag').innerText = isMobile
+  ? '[ MOBILE MODE · AMDF + Median Filter ]'
+  : '[ DESKTOP MODE · YIN Algorithm ]';
+
+/* ── BRIDGE TABS ──────────────────────────────────────── */
+function setBridge(b) {
+  bridge = b;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + b).classList.add('active');
+  renderGrid();
+}
+
+function renderGrid() {
+  const g = document.getElementById('note-grid');
+  g.innerHTML = '';
+  noteNames[bridge].forEach((n, i) => {
+    const h = hzData[bridge][i];
+    const oct = octaveLabels[bridge][i];
+    const btn = document.createElement('div');
+    btn.className = `note-btn${Math.abs(h - target) < 0.1 ? ' active' : ''}`;
+    btn.innerHTML = `<span class="note-btn-name">${n}<small style="font-size:0.6rem;opacity:0.5;margin-left:3px">${oct}</small></span><span class="note-btn-hz">${h} Hz</span>`;
+    btn.onclick = () => {
+      target = h;
+      targetName = n;
+      document.getElementById('note-name').innerText = n;
+      document.getElementById('target-hz').innerText = h + ' Hz';
+      pitchBuffer = [];
+      updateNeedle(0);
+      renderGrid();
+      highlightString(bridge, i);
     };
-    const noteNames = {
-        left: ["ซอล(ส)", "ฟาร์", "มี", "เร", "โด", "ที", "ลา"],
-        middle: ["โด", "ที", "ลา", "ซอล", "ฟาร์", "มี", "เร"],
-        right: ["ฟาร์", "มี", "เร", "โด", "ที", "ลา", "ซอล(ท)"]
+    g.appendChild(btn);
+  });
+}
+
+/* ── KHIM SVG STRINGS ─────────────────────────────────── */
+function buildStrings() {
+  const sg = document.getElementById('strings-svg');
+  sg.innerHTML = '';
+  const totalStrings = 18;
+  for (let i = 0; i < totalStrings; i++) {
+    const y = 18 + (i * 3.8);
+    const thickness = 0.35 + (i * 0.025);
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    el.setAttribute('x1', '10'); el.setAttribute('y1', y);
+    el.setAttribute('x2', '150'); el.setAttribute('y2', y);
+    el.setAttribute('stroke', '#7a6040');
+    el.setAttribute('stroke-width', thickness);
+    el.setAttribute('id', 'str-' + i);
+    sg.appendChild(el);
+  }
+}
+
+let lastHighlighted = null;
+function highlightString(b, idx) {
+  const totalStrings = 18;
+  const bridgeOffset = { left: 0, middle: 6, right: 12 };
+  const si = bridgeOffset[b] + idx;
+  document.querySelectorAll('#strings-svg line').forEach(l => {
+    l.setAttribute('stroke', '#7a6040');
+    l.setAttribute('opacity', '0.7');
+  });
+  const el = document.getElementById('str-' + si);
+  if (el) {
+    el.setAttribute('stroke', '#d4a849');
+    el.setAttribute('stroke-width', '0.9');
+    el.setAttribute('opacity', '1');
+  }
+}
+
+/* ── AUDIO START ──────────────────────────────────────── */
+async function startApp() {
+  try {
+    const constraints = {
+      audio: {
+        echoCancellation: !isMobile,
+        noiseSuppression: !isMobile,
+        autoGainControl: false
+      }
     };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sr = audioCtx.sampleRate;
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-    // ตรวจสอบอุปกรณ์
-    isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    document.getElementById('version-text').innerText = isMobile ? "โหมดมือถือ: ตอบสนองไว + กันเสียงเด้ง" : "โหมดคอมพิวเตอร์: ความแม่นยำสูง (USB Mic)";
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = isMobile ? CONFIG.FFT_MOBILE : CONFIG.FFT_DESKTOP;
+    analyser.smoothingTimeConstant = 0.15;
+    audioCtx.createMediaStreamSource(stream).connect(analyser);
 
-    function setBridge(b) {
-        bridge = b;
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('tab-' + b).classList.add('active');
-        renderGrid();
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('status-dot').classList.add('active');
+    document.getElementById('status-text').innerText =
+      isMobile ? 'AMDF · MEDIAN FILTER · ACTIVE' : 'YIN ALGORITHM · ACTIVE';
+
+    isRunning = true;
+    tick();
+
+    // Pause audio when tab hidden (battery saving)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { audioCtx.suspend(); }
+      else { audioCtx.resume(); }
+    });
+  } catch(e) {
+    alert('ไม่สามารถเข้าถึงไมโครโฟนได้\nกรุณาใช้ HTTPS และอนุญาตไมโครโฟน');
+  }
+}
+
+/* ── PITCH DETECTION TICK ─────────────────────────────── */
+function tick() {
+  if (!isRunning) return;
+  const buf = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(buf);
+
+  const pitch = isMobile ? getPitchAMDF(buf) : getPitchYIN(buf);
+
+  if (pitch > 0 && pitch > target * 0.45 && pitch < target * 2.2) {
+    pitchBuffer.push(pitch);
+    if (pitchBuffer.length > CONFIG.PITCH_BUFFER) pitchBuffer.shift();
+    const sorted = [...pitchBuffer].sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
+    updateUI(median);
+  }
+
+  requestAnimationFrame(tick);
+}
+
+/* ── YIN ALGORITHM (Desktop) ──────────────────────────── */
+function getPitchYIN(buf) {
+  const threshold = 0.10;
+  const size = buf.length;
+  const halfSize = Math.floor(size / 2);
+
+  // RMS gate
+  let rms = 0;
+  for (let i = 0; i < size; i++) rms += buf[i] * buf[i];
+  if (Math.sqrt(rms / size) < CONFIG.RMS_THRESHOLD_DESKTOP) return -1;
+
+  // YIN difference function
+  const yinBuf = new Float32Array(halfSize);
+  let runningSum = 0;
+  yinBuf[0] = 1;
+
+  for (let tau = 1; tau < halfSize; tau++) {
+    let diff = 0;
+    for (let i = 0; i < halfSize; i++) {
+      const delta = buf[i] - buf[i + tau];
+      diff += delta * delta;
     }
+    yinBuf[tau] = diff;
+    runningSum += diff;
+    yinBuf[tau] *= tau / runningSum; // cumulative mean normalized
+  }
 
-    function renderGrid() {
-        const g = document.getElementById('grid');
-        g.innerHTML = '';
-        noteNames[bridge].forEach((n, i) => {
-            const h = hzData[bridge][i];
-            const btn = document.createElement('div');
-            btn.className = `note-btn ${Math.abs(h - target) < 0.1 ? 'active' : ''}`;
-            btn.innerHTML = `<b>${n}</b>${h} Hz`;
-            btn.onclick = () => { 
-                target = h; 
-                document.getElementById('note-name').innerText = n; 
-                document.getElementById('target-hz').innerText = h + ' Hz'; 
-                pitchBuffer = [];
-                renderGrid(); 
-            };
-            g.appendChild(btn);
-        });
+  // Find first dip below threshold
+  let tau = 2;
+  while (tau < halfSize) {
+    if (yinBuf[tau] < threshold) {
+      while (tau + 1 < halfSize && yinBuf[tau + 1] < yinBuf[tau]) tau++;
+      break;
     }
+    tau++;
+  }
+  if (tau === halfSize || yinBuf[tau] >= threshold) return -1;
 
-    async function startApp() {
-        try {
-            // แยก Settings ตามอุปกรณ์
-            const constraints = isMobile ? 
-                { audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } } : 
-                { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } };
+  // Parabolic interpolation for sub-sample accuracy
+  const betterTau = tau;
+  if (betterTau > 0 && betterTau < halfSize - 1) {
+    const s0 = yinBuf[betterTau - 1];
+    const s1 = yinBuf[betterTau];
+    const s2 = yinBuf[betterTau + 1];
+    const adjustment = (s2 - s0) / (2 * (2 * s1 - s2 - s0));
+    return sr / (betterTau + adjustment);
+  }
+  return sr / betterTau;
+}
 
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            sr = audioCtx.sampleRate;
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
+/* ── AMDF (Mobile) ────────────────────────────────────── */
+function getPitchAMDF(buf) {
+  const size = Math.floor(buf.length / 2);
+  let rms = 0;
+  for (let i = 0; i < size; i++) rms += buf[i] * buf[i];
+  if (Math.sqrt(rms / size) < CONFIG.RMS_THRESHOLD_MOBILE) return -1;
 
-            analyser = audioCtx.createAnalyser();
-            // Desktop ใช้ Buffer ใหญ่เพื่อความแม่นยำ / Mobile ใช้ปานกลางเพื่อความเร็ว
-            analyser.fftSize = isMobile ? 2048 : 4096; 
-            
-            audioCtx.createMediaStreamSource(stream).connect(analyser);
-            document.getElementById('overlay').style.display = 'none';
-            tick();
-        } catch(e) { alert("Mic error: กรุณาเปิด HTTPS และอนุญาตให้เข้าถึงไมค์"); }
-    }
+  const minTau = Math.round(sr / 1100);
+  const maxTau = Math.round(sr / 80);
+  let minSum = Infinity, bestTau = -1;
 
-    function tick() {
-        const buf = new Float32Array(analyser.fftSize);
-        analyser.getFloatTimeDomainData(buf);
-        
-        if (isMobile) {
-            // ENGINE มือถือ: กรองเสียงเด้งและเน้นความไว
-            let p = getPitchMobile(buf);
-            if (p > 0 && p < target * 1.5 && p > target * 0.5) {
-                pitchBuffer.push(p);
-                if (pitchBuffer.length > 5) pitchBuffer.shift();
-                const sorted = [...pitchBuffer].sort((a,b)=>a-b);
-                updateUI(sorted[Math.floor(sorted.length/2)]);
-            }
-        } else {
-            // ENGINE คอมพิวเตอร์: เน้นความแม่นยำสูงสุด (Auto-Correlation)
-            let p = getPitchDesktop(buf);
-            if (p > 50 && p < 1200) updateUI(p);
-        }
-        
-        requestAnimationFrame(tick);
-    }
+  for (let tau = minTau; tau < maxTau; tau++) {
+    let sum = 0;
+    for (let i = 0; i < size; i++) sum += Math.abs(buf[i] - buf[i + tau]);
+    if (sum < minSum) { minSum = sum; bestTau = tau; }
+  }
+  // Quality gate
+  const quality = minSum / size;
+  if (quality > 0.15) return -1;
+  return sr / bestTau;
+}
 
-    function updateUI(p) {
-        document.getElementById('live-hz').innerText = p.toFixed(1);
-        const diff = p - target;
-        document.getElementById('needle').style.left = Math.max(5, Math.min(95, 50 + (diff * 4))) + '%';
-        document.getElementById('live-hz').style.color = Math.abs(diff) < 0.8 ? '#00e676' : '#7b241c';
-    }
+/* ── UPDATE UI ────────────────────────────────────────── */
+const CIRCUMFERENCE = 2 * Math.PI * 38; // ring r=38 → ~238.76
+const ringArc = document.getElementById('ring-arc');
+const needle  = document.getElementById('needle');
+const centVal = document.getElementById('cent-val');
+const liveHz  = document.getElementById('live-hz');
+const dirBadge = document.getElementById('dir-badge');
 
-    // --- ENGINE 1: MOBILE (AMDF Gated) ---
-    function getPitchMobile(buf) {
-        let size = buf.length / 2;
-        let rms = 0; for(let i=0; i<size; i++) rms += buf[i]*buf[i];
-        if (Math.sqrt(rms/size) < 0.02) return -1;
-        let minSum = Infinity, bestTau = -1;
-        const minTau = Math.round(sr / 1100);
-        const maxTau = Math.round(sr / 100);
-        for (let tau = minTau; tau < maxTau; tau++) {
-            let sum = 0;
-            for (let i = 0; i < size; i++) sum += Math.abs(buf[i] - buf[i+tau]);
-            if (sum < minSum) { minSum = sum; bestTau = tau; }
-        }
-        return (minSum / (rms * size) > 0.9) ? -1 : sr / bestTau;
-    }
+function updateUI(p) {
+  // Cents deviation
+  const cents = 1200 * Math.log2(p / target);
+  const clamped = Math.max(-50, Math.min(50, cents));
 
-    // --- ENGINE 2: DESKTOP (High-Precision Auto-Correlation) ---
-    function getPitchDesktop(buf) {
-        let size = buf.length;
-        let rms = 0; for(let i=0; i<size; i++) rms += buf[i]*buf[i];
-        if (Math.sqrt(rms/size) < 0.01) return -1;
+  // Update Hz display
+  liveHz.innerText = p.toFixed(1);
 
-        let c = new Float32Array(size);
-        for (let i=0; i<size; i++) {
-            for (let j=0; j<size-i; j++) c[i] += buf[j]*buf[j+i];
-        }
-        let d = 0; while (c[d] > c[d+1]) d++;
-        let maxVal = -1, maxPos = -1;
-        for (let i=d; i<size; i++) {
-            if (c[i] > maxVal) { maxVal = c[i]; maxPos = i; }
-        }
-        
-        // Parabolic Interpolation เพื่อหาค่าทศนิยมที่แม่นยำที่สุดบน Desktop
-        if (maxPos > 0 && maxPos < size - 1) {
-            let y1 = c[maxPos-1], y2 = c[maxPos], y3 = c[maxPos+1];
-            let delta = (y3 - y1) / (2 * (2 * y2 - y1 - y3));
-            return sr / (maxPos + delta);
-        }
-        return sr / maxPos;
-    }
+  // Cent display
+  centVal.innerText = (cents > 0 ? '+' : '') + Math.round(cents);
 
-    document.getElementById('start-btn').addEventListener('click', startApp);
-    window.onload = () => {
-        const sg = document.getElementById('strings-group');
-        for(let i=0; i<7; i++) {
-            let y = 20 + (i*8);
-            sg.innerHTML += `<line x1="12" y1="${y}" x2="128" y2="${y}" stroke="#1a0f0d" stroke-width="0.5" opacity="0.2"></line>`;
-        }
-        renderGrid();
-    };
+  // Ring meter: maps -50..+50 cents → 0..239.4 arc
+  const arcFraction = Math.abs(clamped) / 50;
+  const offset = CIRCUMFERENCE - (CIRCUMFERENCE * 0.7 * arcFraction);
+  ringArc.style.strokeDashoffset = offset;
+
+  // Colors by tuning state
+  let color, badgeClass, badgeText;
+  if (Math.abs(cents) <= CONFIG.IN_TUNE_CENTS) {
+    color = 'var(--green)'; badgeClass = 'in-tune'; badgeText = '✓ ได้แล้ว!';
+  } else if (cents < 0) {
+    color = 'var(--sharp)'; badgeClass = 'flat'; badgeText = '▼ ต่ำ / หมุนขึ้น';
+  } else {
+    color = 'var(--flat)'; badgeClass = 'sharp'; badgeText = '▲ สูง / หมุนลง';
+  }
+
+  liveHz.style.color = color;
+  centVal.style.color = color;
+  ringArc.style.stroke = color;
+  needle.style.background = color;
+  needle.style.boxShadow = `0 0 10px ${color}`;
+
+  dirBadge.className = 'direction-badge ' + badgeClass;
+  dirBadge.innerText = badgeText;
+
+  // Needle position: ±50 cents = ±45% from center
+  const pos = 50 + (clamped * 0.9);
+  needle.style.left = Math.max(3, Math.min(97, pos)) + '%';
+}
+
+function updateNeedle(cents) {
+  needle.style.left = '50%';
+  needle.style.background = 'var(--accent)';
+  centVal.innerText = '±0';
+}
+
+/* ── INIT ─────────────────────────────────────────────── */
+window.onload = () => {
+  buildStrings();
+  renderGrid();
+};
+document.getElementById('start-btn').addEventListener('click', startApp);
 </script>
 </body>
 </html>
